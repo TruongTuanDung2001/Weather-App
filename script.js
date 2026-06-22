@@ -12,55 +12,55 @@
        -------------------------------------------------------- */
 
     // App shell
-    const app          = document.getElementById('app');
-    const header       = document.getElementById('header');
-    const main         = document.getElementById('main');
-    const footer       = document.getElementById('footer');
+    const app = document.getElementById('app');
+    const header = document.getElementById('header');
+    const main = document.getElementById('main');
+    const footer = document.getElementById('footer');
 
     // Search
-    const searchForm   = document.getElementById('searchForm');
-    const searchInput  = document.getElementById('searchInput');
-    const searchBtn    = document.getElementById('searchBtn');
-    const searchError  = document.getElementById('searchError');
-    const unitToggle   = document.getElementById('unitToggle');
-    const locationBtn  = document.getElementById('locationBtn');
+    const searchForm = document.getElementById('searchForm');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchError = document.getElementById('searchError');
+    const unitToggle = document.getElementById('unitToggle');
+    const locationBtn = document.getElementById('locationBtn');
 
     // States
     const loadingState = document.getElementById('loadingState');
-    const errorState   = document.getElementById('errorState');
+    const errorState = document.getElementById('errorState');
     const errorMessage = document.getElementById('errorMessage');
-    const errorRetry   = document.getElementById('errorRetryBtn');
-    const content      = document.getElementById('content');
+    const errorRetry = document.getElementById('errorRetryBtn');
+    const content = document.getElementById('content');
 
     // Current weather
-    const currentCity      = document.getElementById('currentCity');
-    const currentDate      = document.getElementById('currentDate');
-    const currentIcon      = document.getElementById('currentIcon');
-    const currentTemp      = document.getElementById('currentTemp');
+    const currentCity = document.getElementById('currentCity');
+    const currentDate = document.getElementById('currentDate');
+    const currentIcon = document.getElementById('currentIcon');
+    const currentTemp = document.getElementById('currentTemp');
     const currentCondition = document.getElementById('currentCondition');
-    const currentMin       = document.getElementById('currentMin');
-    const currentMax       = document.getElementById('currentMax');
-    const currentFeels     = document.getElementById('currentFeels');
-    const currentHumidity  = document.getElementById('currentHumidity');
-    const currentWind      = document.getElementById('currentWind');
-    const currentPressure  = document.getElementById('currentPressure');
+    const currentMin = document.getElementById('currentMin');
+    const currentMax = document.getElementById('currentMax');
+    const currentFeels = document.getElementById('currentFeels');
+    const currentHumidity = document.getElementById('currentHumidity');
+    const currentWind = document.getElementById('currentWind');
+    const currentPressure = document.getElementById('currentPressure');
 
     // Highlights
-    const uvValue          = document.getElementById('uvValue');
-    const uvBadge          = document.getElementById('uvBadge');
-    const windValue        = document.getElementById('windValue');
-    const windDirection    = document.getElementById('windDirection');
-    const sunriseValue     = document.getElementById('sunriseValue');
-    const sunsetValue      = document.getElementById('sunsetValue');
-    const humidityValue    = document.getElementById('humidityValue');
-    const humidityStatus   = document.getElementById('humidityStatus');
-    const visibilityValue  = document.getElementById('visibilityValue');
-    const airQualityValue  = document.getElementById('airQualityValue');
-    const airQualityBadge  = document.getElementById('airQualityBadge');
+    const uvValue = document.getElementById('uvValue');
+    const uvBadge = document.getElementById('uvBadge');
+    const windValue = document.getElementById('windValue');
+    const windDirection = document.getElementById('windDirection');
+    const sunriseValue = document.getElementById('sunriseValue');
+    const sunsetValue = document.getElementById('sunsetValue');
+    const humidityValue = document.getElementById('humidityValue');
+    const humidityStatus = document.getElementById('humidityStatus');
+    const visibilityValue = document.getElementById('visibilityValue');
+    const airQualityValue = document.getElementById('airQualityValue');
+    const airQualityBadge = document.getElementById('airQualityBadge');
 
     // Forecasts
     const hourlyList = document.getElementById('hourlyList');
-    const dailyList  = document.getElementById('dailyList');
+    const dailyList = document.getElementById('dailyList');
 
     /* --------------------------------------------------------
        2. App State (placeholder)
@@ -72,7 +72,7 @@
         city: '',
         current: null,
         hourly: [],
-        daily:  [],
+        daily: [],
         isLoading: false,
         error: null
     };
@@ -144,8 +144,8 @@
     function showLoading() {
         // TODO: Hide content + error, show loadingState.
         if (loadingState) loadingState.hidden = false;
-        if (errorState)   errorState.hidden   = true;
-        if (content)      content.hidden      = false;
+        if (errorState) errorState.hidden = true;
+        if (content) content.hidden = false;
         state.isLoading = true;
     }
 
@@ -158,8 +158,8 @@
     function showError(message) {
         // TODO: Hide content + loading, show errorState with message.
         if (loadingState) loadingState.hidden = true;
-        if (content)      content.hidden      = false;
-        if (errorState)   errorState.hidden   = false;
+        if (content) content.hidden = false;
+        if (errorState) errorState.hidden = false;
         if (errorMessage) errorMessage.textContent = message || 'Something went wrong.';
         state.error = message;
     }
@@ -182,6 +182,22 @@
     function renderWeather(data) {
         // TODO: Populate current weather fields from API response.
         // Expected shape: { city, date, icon, temp, condition, min, max, feelsLike, humidity, wind, pressure }
+        // Current Weather
+        currentTemp.textContent =
+            `${Math.round(data.temperature_2m)}°`;
+
+        currentHumidity.textContent =
+            `${data.relative_humidity_2m}%`;
+
+        currentWind.textContent =
+            `${data.wind_speed_10m} km/h`;
+
+        // Highlights
+        humidityValue.textContent =
+            `${data.relative_humidity_2m}%`;
+
+        windValue.textContent =
+            `${data.wind_speed_10m} km/h`;
     }
 
     function renderHighlights(data) {
@@ -228,8 +244,8 @@
 
     function showContent() {
         // TODO: Show the main content container.
-        if (content)      content.hidden      = false;
-        if (errorState)   errorState.hidden   = true;
+        if (content) content.hidden = false;
+        if (errorState) errorState.hidden = true;
         if (loadingState) loadingState.hidden = true;
     }
 
@@ -258,38 +274,80 @@
        -------------------------------------------------------- */
 
     document.addEventListener('DOMContentLoaded', init);
+
+    /* --------------------------------------------------------
+       10. API
+       -------------------------------------------------------- */
+
+    //Hàm lấy api 63 tỉnh thành của việt nam
+    async function getApiCities() {
+        try {
+            let response = await fetch('https://provinces.open-api.vn/api/p/');
+
+            if (response.ok) {
+                let data = await response.json();
+                console.log(data);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    getApiCities(); //Có được thông tin 63 tỉnh thành.
+
+
+    //Hàm lấy tọa độ bằng tên thành phố
+    async function getApiLocationByNameCities(nameCity) {
+        try {
+            nameCity = nameCity.replace('Tỉnh ', '').replace('Thành phố ', '');
+
+            let response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${nameCity}&country=VN&count=1`);
+
+            if (response.ok) {
+                let data = await response.json();
+                console.log(data);
+
+                //
+                let locationAt = data.results[0];
+                console.log(locationAt.latitude);
+                console.log(locationAt.longitude);
+                getApiWeatherByLocation(locationAt.latitude, locationAt.longitude);
+                //
+                currentCity.textContent = locationAt.name;
+                currentDate.textContent = new Date().toLocaleDateString('vi-VN',
+                        {
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'long'
+                        });
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    getApiLocationByNameCities('Thành phố Hà Nội'); //Vị trí tọa độ của tỉnh thành. /search
+
+
+    //Hàm lấy thời tiết hiện tại thông qua kinh độ, vĩ độ
+    async function getApiWeatherByLocation(lat, lon) {
+        try {
+            let response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m`);
+
+            if (response.ok) {
+                let data = await response.json();
+                console.log(data);
+                renderWeather(data.current);
+                showContent();
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
 })();
 
-async function getApiCities(){
-    try {
-        let response = await fetch('https://provinces.open-api.vn/api/p/');
-        // https://geocoding-api.open-meteo.com/v1/search?name=Ho%20Chi%20Minh&count=1&language=vi&format=json
 
-        if(response.ok){
-            let data = await response.json();
-            console.log(data);
-        }
-    } catch (error) {
-        console.log(error);
-        
-    }
-}
 
-getApiCities(); //Có được thông tin 63 tỉnh thành.
 
-async function getApiLocationByNameCities(nameCity){
-    try {
-        nameCity = nameCity.replace('Tỉnh ', '').replace('Thành Phố ', '');
-        console.log(nameCity);
-        
-        let response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${nameCity}&country=VN&count=1`);
 
-        if(response.ok){
-            let data = await response.json();
-            console.log(data);
-        }
-    } catch (error) {
-        console.log(error);
-    }
-}
-getApiLocationByNameCities('Thành phố Hà Nội'); //Vị trí tọa độ của tỉnh thành. /search
+
