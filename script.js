@@ -183,21 +183,85 @@
         // TODO: Populate current weather fields from API response.
         // Expected shape: { city, date, icon, temp, condition, min, max, feelsLike, humidity, wind, pressure }
         // Current Weather
-        currentTemp.textContent =
-            `${Math.round(data.temperature_2m)}°`;
+        currentTemp.textContent = `${Math.round(data.current.temperature_2m)}°`;
 
-        currentHumidity.textContent =
-            `${data.relative_humidity_2m}%`;
+        currentHumidity.textContent = `${data.current.relative_humidity_2m}%`;
 
-        currentWind.textContent =
-            `${data.wind_speed_10m} km/h`;
+        currentWind.textContent = `${data.current.wind_speed_10m} km/h`;
 
         // Highlights
-        humidityValue.textContent =
-            `${data.relative_humidity_2m}%`;
+        humidityValue.textContent = `${data.current.relative_humidity_2m}%`;
+
+        windValue.textContent = `${data.current.wind_speed_10m} km/h`;
+
+        currentPressure.textContent = `${Math.round(data.current.pressure_msl)} hPa`;
+
+        currentMin.textContent =
+            `${Math.round(
+                data.daily.temperature_2m_min[0]
+            )}°`;
+
+        currentMax.textContent =
+            `${Math.round(
+                data.daily.temperature_2m_max[0]
+            )}°`;
+
+        // highlight
+        uvValue.textContent = data.daily.uv_index_max[0];
 
         windValue.textContent =
-            `${data.wind_speed_10m} km/h`;
+            `${data.current.wind_speed_10m} km/h`;
+
+        humidityValue.textContent =
+            `${data.current.relative_humidity_2m}%`;
+
+
+        // sunrise sunset
+        sunriseValue.textContent =
+            new Date(
+                data.daily.sunrise[0]
+            )
+                .toLocaleTimeString(
+                    'vi-VN',
+                    {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }
+                );
+
+        sunsetValue.textContent = new Date(data.daily.sunset[0]).toLocaleTimeString(
+            'vi-VN',
+            {
+                hour: '2-digit',
+                minute: '2-digit'
+            }
+        );
+
+        currentFeels.textContent =
+            `${Math.round(
+                data.current.apparent_temperature
+            )}°`;
+
+        visibilityValue.textContent =
+            `${(
+                data.current.visibility
+                / 1000
+            ).toFixed(1)} km`;
+
+        airQualityValue.textContent =
+            getComfort(
+                data.current.temperature_2m,
+                data.current.relative_humidity_2m
+            );
+
+        airQualityBadge.textContent =
+            'Weather';
+
+        // icon
+        currentIcon.textContent =
+            getWeatherIcon(
+                data.current.weather_code
+            );
     }
 
     function renderHighlights(data) {
@@ -306,7 +370,6 @@
             if (response.ok) {
                 let data = await response.json();
                 console.log(data);
-
                 //
                 let locationAt = data.results[0];
                 console.log(locationAt.latitude);
@@ -315,11 +378,11 @@
                 //
                 currentCity.textContent = locationAt.name;
                 currentDate.textContent = new Date().toLocaleDateString('vi-VN',
-                        {
-                            weekday: 'long',
-                            day: 'numeric',
-                            month: 'long'
-                        });
+                    {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long'
+                    });
             }
         } catch (error) {
             console.log(error);
@@ -331,12 +394,19 @@
     //Hàm lấy thời tiết hiện tại thông qua kinh độ, vĩ độ
     async function getApiWeatherByLocation(lat, lon) {
         try {
-            let response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m`);
+            // let response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m`);
 
+            // let response = await fetch(
+            //     `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,apparent_temperature,pressure_msl&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`
+            // );
+
+            let response = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,pressure_msl,apparent_temperature,visibility,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`
+            ); //lấy thông số api để xuất ra màn hình
             if (response.ok) {
                 let data = await response.json();
                 console.log(data);
-                renderWeather(data.current);
+                renderWeather(data);
                 showContent();
             }
         } catch (error) {
@@ -344,6 +414,61 @@
         }
     }
 
+    //Hàm lấy thông số cảm giác nhiệt độ
+    function getComfort(temp, humidity) {
+        if (temp < 20)
+            return 'Cold';
+        if (temp <= 30 && humidity <= 70)
+            return 'Comfortable';
+        if (temp > 35)
+            return 'Very Hot';
+        return 'Warm';
+    }
+
+    //Icon theo thời tiết 
+    function getWeatherIcon(code, isDay) {
+        // trời quang
+        if (code === 0) {
+            return isDay
+                ? '☀️'
+                : '🌙';
+        }
+        
+        // ít mây
+        if ([1, 2].includes(code)) {
+            return isDay
+                ? '🌤️'
+                : '🌙☁️';
+        }
+
+        // nhiều mây
+        if (code === 3)
+            return '☁️';
+
+        // sương mù
+        if ([45, 48].includes(code))
+            return '🌫️';
+
+        // mưa nhỏ
+        if ([51, 53, 55].includes(code))
+            return '🌦️';
+
+        // mưa
+        if ([61, 63, 65].includes(code))
+            return '🌧️';
+
+        // tuyết
+        if ([71, 73, 75].includes(code))
+            return '❄️';
+
+        // giông
+        if ([95, 96, 99].includes(code))
+            return '⛈️';
+
+        return '🌍';
+    }
+
+    
 })();
 
 
