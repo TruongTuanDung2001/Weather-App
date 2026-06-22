@@ -122,7 +122,7 @@
             return;
         }
         setSearchError('');
-        // fetchWeather(query);
+        getApiLocationByNameCities(query);
     }
 
     function handleUnitToggle() {
@@ -468,7 +468,7 @@
         return '🌍';
     }
 
-    
+
 })();
 
 
