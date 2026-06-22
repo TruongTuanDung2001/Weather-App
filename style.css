@@ -1,0 +1,695 @@
+/* ============================================================
+   Weather App — style.css
+   Modern UI · Glassmorphism · Mobile first · CSS variables
+   ============================================================ */
+
+/* --------------------------------------------------------
+   1. Design Tokens (CSS Variables)
+   -------------------------------------------------------- */
+:root {
+    /* Spacing scale (8px-based) */
+    --space-1: 0.25rem;   /*  4px */
+    --space-2: 0.5rem;    /*  8px */
+    --space-3: 0.75rem;   /* 12px */
+    --space-4: 1rem;      /* 16px */
+    --space-5: 1.5rem;    /* 24px */
+    --space-6: 2rem;      /* 32px */
+    --space-7: 3rem;      /* 48px */
+    --space-8: 4rem;      /* 64px */
+
+    /* Typography */
+    --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --fs-xs: 0.75rem;
+    --fs-sm: 0.875rem;
+    --fs-base: 1rem;
+    --fs-lg: 1.125rem;
+    --fs-xl: 1.5rem;
+    --fs-2xl: 2.25rem;
+    --fs-3xl: 3.5rem;
+    --fs-4xl: 5rem;
+
+    /* Radii */
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-full: 999px;
+
+    /* Color palette */
+    --color-bg-start: #1b2a4e;
+    --color-bg-end:   #0f172a;
+    --color-accent:   #6ea8ff;
+    --color-accent-2: #b18cff;
+    --color-warm:     #ffb86b;
+    --color-text:     #f5f7ff;
+    --color-text-dim: rgba(245, 247, 255, 0.7);
+    --color-text-soft:rgba(245, 247, 255, 0.5);
+    --color-danger:   #ff6b6b;
+    --color-success:  #5ee2a0;
+
+    /* Glassmorphism */
+    --glass-bg:     rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    --glass-blur:   blur(18px);
+
+    /* Motion */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-fast: 150ms var(--ease-out);
+    --transition-base: 250ms var(--ease-out);
+    --transition-slow: 450ms var(--ease-out);
+}
+
+/* --------------------------------------------------------
+   2. Reset & Base
+   -------------------------------------------------------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    font-size: var(--fs-base);
+    color: var(--color-text);
+    line-height: 1.5;
+    background: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end));
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+}
+
+input {
+    font-family: inherit;
+    border: none;
+    outline: none;
+    color: inherit;
+    background: none;
+}
+
+ul {
+    list-style: none;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* --------------------------------------------------------
+   3. App Layout
+   -------------------------------------------------------- */
+.app {
+    width: 100%;
+    max-width: 1200px;
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: var(--space-5) var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+/* --------------------------------------------------------
+   4. Header
+   -------------------------------------------------------- */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.header__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.header__logo {
+    font-size: var(--fs-2xl);
+    line-height: 1;
+}
+
+.header__title {
+    font-size: var(--fs-xl);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.header__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* --------------------------------------------------------
+   5. Buttons (reusable)
+   -------------------------------------------------------- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    transition: transform var(--transition-fast), background var(--transition-base);
+    white-space: nowrap;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn--ghost {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    color: var(--color-text);
+}
+
+.btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.btn--primary {
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 4px 18px rgba(110, 168, 255, 0.4);
+}
+
+.btn--primary:hover {
+    filter: brightness(1.1);
+}
+
+/* --------------------------------------------------------
+   6. Search
+   -------------------------------------------------------- */
+.search {
+    width: 100%;
+}
+
+.search__form {
+    width: 100%;
+}
+
+.search__field {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-full);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-shadow);
+    transition: border-color var(--transition-base);
+}
+
+.search__field:focus-within {
+    border-color: var(--color-accent);
+}
+
+.search__icon {
+    font-size: var(--fs-base);
+    opacity: 0.7;
+}
+
+.search__input {
+    flex: 1;
+    padding: var(--space-2) 0;
+    font-size: var(--fs-base);
+    color: var(--color-text);
+}
+
+.search__input::placeholder {
+    color: var(--color-text-soft);
+}
+
+.search__btn {
+    flex-shrink: 0;
+}
+
+.search__error {
+    margin-top: var(--space-2);
+    padding-left: var(--space-4);
+    color: var(--color-danger);
+    font-size: var(--fs-sm);
+    min-height: 1.25em;
+}
+
+/* --------------------------------------------------------
+   7. Section title
+   -------------------------------------------------------- */
+.section-title {
+    font-size: var(--fs-lg);
+    font-weight: 600;
+    margin-bottom: var(--space-4);
+    color: var(--color-text);
+    letter-spacing: -0.01em;
+}
+
+/* --------------------------------------------------------
+   8. Main / States (Loading, Error)
+   -------------------------------------------------------- */
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--space-3);
+    padding: var(--space-7) var(--space-4);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    animation: fadeIn var(--transition-slow);
+}
+
+.state__icon {
+    font-size: var(--fs-3xl);
+}
+
+.state__title {
+    font-size: var(--fs-xl);
+    font-weight: 600;
+}
+
+.state__text {
+    color: var(--color-text-dim);
+    max-width: 32ch;
+}
+
+/* Spinner */
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--glass-border);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+}
+
+/* --------------------------------------------------------
+   9. Glass Card (reusable)
+   -------------------------------------------------------- */
+.card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-shadow);
+    padding: var(--space-5);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    animation: fadeUp var(--transition-slow);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* --------------------------------------------------------
+   10. Current Weather
+   -------------------------------------------------------- */
+.card--current {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.current__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.current__city {
+    font-size: var(--fs-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.current__date {
+    color: var(--color-text-dim);
+    font-size: var(--fs-sm);
+    margin-top: var(--space-1);
+}
+
+.current__icon {
+    font-size: 4rem;
+    line-height: 1;
+    animation: floaty 3s ease-in-out infinite;
+}
+
+.current__main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.current__temp {
+    font-size: var(--fs-4xl);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #fff, var(--color-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.current__condition {
+    font-size: var(--fs-lg);
+    color: var(--color-text-dim);
+}
+
+.current__range {
+    font-size: var(--fs-sm);
+    color: var(--color-text-soft);
+}
+
+.current__divider {
+    margin: 0 var(--space-2);
+}
+
+.current__meta {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--glass-border);
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.meta-item__label {
+    font-size: var(--fs-xs);
+    color: var(--color-text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.meta-item__value {
+    font-size: var(--fs-base);
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------
+   11. Highlights grid
+   -------------------------------------------------------- */
+.highlights__grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: var(--space-4);
+}
+
+.highlight {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.highlight__label {
+    font-size: var(--fs-xs);
+    color: var(--color-text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.highlight__value {
+    font-size: var(--fs-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.highlight__sub {
+    font-size: var(--fs-sm);
+    color: var(--color-text-dim);
+}
+
+.highlight__badge {
+    align-self: flex-start;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    background: rgba(110, 168, 255, 0.2);
+    color: var(--color-accent);
+}
+
+/* --------------------------------------------------------
+   12. Forecast (Hourly + Daily)
+   -------------------------------------------------------- */
+.forecast {
+    display: flex;
+    flex-direction: column;
+}
+
+.forecast__list {
+    display: flex;
+    gap: var(--space-3);
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+    scrollbar-width: thin;
+    scrollbar-color: var(--glass-border) transparent;
+}
+
+.forecast__list::-webkit-scrollbar {
+    height: 6px;
+}
+
+.forecast__list::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: var(--radius-full);
+}
+
+.hourly-item {
+    flex: 0 0 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-2);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    text-align: center;
+    transition: transform var(--transition-fast);
+}
+
+.hourly-item:hover {
+    transform: translateY(-2px);
+}
+
+.hourly-item__time {
+    font-size: var(--fs-sm);
+    color: var(--color-text-dim);
+}
+
+.hourly-item__icon {
+    font-size: var(--fs-xl);
+}
+
+.hourly-item__temp {
+    font-weight: 600;
+}
+
+.forecast__days {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.daily-item {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    transition: transform var(--transition-fast);
+}
+
+.daily-item:hover {
+    transform: translateX(4px);
+}
+
+.daily-item__day {
+    font-weight: 600;
+}
+
+.daily-item__icon {
+    font-size: var(--fs-xl);
+}
+
+.daily-item__range {
+    text-align: right;
+    color: var(--color-text-dim);
+    font-size: var(--fs-sm);
+}
+
+.daily-item__bar {
+    width: 100%;
+    max-width: 120px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.daily-item__bar-fill {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-warm));
+    border-radius: var(--radius-full);
+}
+
+/* --------------------------------------------------------
+   13. Footer
+   -------------------------------------------------------- */
+.footer {
+    text-align: center;
+    padding: var(--space-4) 0;
+    color: var(--color-text-soft);
+    font-size: var(--fs-sm);
+}
+
+/* --------------------------------------------------------
+   14. Animations
+   -------------------------------------------------------- */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes floaty {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+}
+
+/* --------------------------------------------------------
+   15. Responsive — Mobile first → Tablet → Desktop
+   -------------------------------------------------------- */
+
+/* Tablet (≥ 640px) */
+@media (min-width: 640px) {
+    .app {
+        padding: var(--space-6) var(--space-5);
+    }
+
+    .highlights__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .current__meta {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Desktop (≥ 1024px) */
+@media (min-width: 1024px) {
+    .main {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        grid-template-areas:
+            "current  highlights"
+            "hourly   daily";
+        gap: var(--space-5);
+        align-items: start;
+    }
+
+    #currentWeather    { grid-area: current; }
+    #highlights        { grid-area: highlights; }
+    #hourlyForecast    { grid-area: hourly; }
+    #dailyForecast     { grid-area: daily; }
+
+    .highlights__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}

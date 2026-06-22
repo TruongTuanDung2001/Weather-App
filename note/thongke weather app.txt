@@ -1,0 +1,213 @@
+📋 Tổng quan cấu trúc
+  File script.js được bọc trong một IIFE (Immediately Invoked Function Expression) để tránh leak biến ra global:
+  (function () {
+      'use strict';
+      // ... toàn bộ code ở đây
+  })();
+
+  use strict = bật strict mode để code an toàn hơn.
+
+  ---
+  🔹 Block 1: DOM Selectors (chọn phần tử HTML)
+
+  Đây là phần "khai báo" — lưu tham chiếu đến các phần tử DOM mà JS sẽ thao tác. Thay vì gọi document.getElementById() nhiều lần, ta lưu  1 lần vào biến.
+
+  Được chia theo nhóm:
+
+  ┌──────────────────────────────────────────────────────────────┬─────────────────────────────────────────────┐
+  │                             Nhóm                             │                  Mục đích                   │
+  ├──────────────────────────────────────────────────────────────┼─────────────────────────────────────────────┤
+  │ App shell (app, header, main, footer)                        │ Khung chính của trang                       │
+  ├──────────────────────────────────────────────────────────────┼─────────────────────────────────────────────┤
+  │ Search (searchForm, searchInput, unitToggle, locationBtn...) │ Thanh tìm kiếm + nút                        │
+  ├──────────────────────────────────────────────────────────────┼─────────────────────────────────────────────┤
+  │ States (loadingState, errorState, content)                   │ 3 trạng thái: loading, error, content       │
+  ├──────────────────────────────────────────────────────────────┼─────────────────────────────────────────────┤
+  │ Current weather (currentCity, currentTemp...)                │ Các ô hiển thị thời tiết hiện tại           │
+  ├──────────────────────────────────────────────────────────────┼─────────────────────────────────────────────┤
+  │ Highlights (uvValue, windValue...)                           │ 6 ô highlight (UV, gió, mặt trời, độ ẩm...) │
+  ├──────────────────────────────────────────────────────────────┼─────────────────────────────────────────────┤
+  │ Forecasts (hourlyList, dailyList)                            │ Container cho dự báo theo giờ + theo ngày   │
+  └──────────────────────────────────────────────────────────────┴─────────────────────────────────────────────┘
+
+  ▎ 💡 Tất cả các biến này hiện tại null nếu HTML không có id tương ứng — an toàn vì có check if (element) ở dưới.
+
+  ---
+  🔹 Block 2: App State
+
+  const state = {
+      unit: 'C',          // Đơn vị nhiệt độ
+      city: '',           // Thành phố đang xem
+      current: null,      // Dữ liệu thời tiết hiện tại (sau khi gọi API)
+      hourly: [],         // Dự báo theo giờ
+      daily:  [],         // Dự báo theo ngày
+      isLoading: false,   // Đang loading?
+      error: null         // Có lỗi không?
+  };
+
+  Đây là "single source of truth" — mọi dữ liệu app đều nằm ở đây. Khi state thay đổi → UI render lại.
+
+  ---
+  🔹 Block 3: Init & bindEvents
+
+  init()
+
+  function init() {
+      bindEvents();
+      showLoading();
+      setTimeout(() => {
+          showError('Search for a city to see the weather forecast.');
+      }, 600);
+  }
+  - Hàm khởi động app khi DOM load xong
+  - Bước 1: gắn event listeners
+  - Bước 2: hiện loading
+  - Bước 3: sau 600ms hiện error (vì chưa có data, tạm thời nhắc user search)
+
+  bindEvents()
+
+  function bindEvents() {
+      if (searchForm)  searchForm.addEventListener('submit', handleSearch);
+      if (unitToggle)  unitToggle.addEventListener('click', handleUnitToggle);
+      if (locationBtn) locationBtn.addEventListener('click', handleGeolocation);
+      if (errorRetry)  errorRetry.addEventListener('click', handleRetry);
+  }
+  - Gắn 4 sự kiện cho 4 nút tương ứng
+  - Dùng if để check phần tử tồn tại trước khi gắn (phòng trường hợp HTML bị lỗi)
+
+  ---
+  🔹 Block 4: Event Handlers (4 hàm)
+
+  handleSearch(event) — Khi user bấm Search
+
+  event.preventDefault();  // Ngăn form reload trang
+  const query = (searchInput.value || '').trim();
+  if (!query) { setSearchError('Please enter a city name.'); return; }
+  // fetchWeather(query);
+  - Lấy text user nhập, loại bỏ khoảng trắng
+  - Nếu rỗng → báo lỗi ngay dưới ô input
+  - TODO: sẽ gọi fetchWeather(query) ở đây
+
+  handleUnitToggle() — Bấm nút °C/°F
+
+  - TODO: chuyển state.unit từ 'C' ↔ 'F' rồi render lại nhiệt độ
+
+  handleGeolocation() — Bấm 📍 My Location
+
+  - TODO: dùng navigator.geolocation lấy tọa độ, rồi gọi API theo lat/lon
+
+  handleRetry() — Bấm Retry khi lỗi
+
+  - TODO: gọi lại query cũ
+
+  ---
+  🔹 Block 5: State Helpers (5 hàm)
+
+  Mỗi hàm quản lý 1 trạng thái UI:
+
+  ┌─────────────────────┬────────────────────────────────────────────┐
+  │         Hàm         │                 Công việc                  │
+  ├─────────────────────┼────────────────────────────────────────────┤
+  │ showLoading()       │ Ẩn content + error, hiện spinner           │
+  ├─────────────────────┼────────────────────────────────────────────┤
+  │ hideLoading()       │ Ẩn spinner                                 │
+  ├─────────────────────┼────────────────────────────────────────────┤
+  │ showError(msg)      │ Ẩn content + loading, hiện error + message │
+  ├─────────────────────┼────────────────────────────────────────────┤
+  │ hideError()         │ Ẩn error panel                             │
+  ├─────────────────────┼────────────────────────────────────────────┤
+  │ setSearchError(msg) │ Hiện lỗi nhỏ dưới ô search (validation)    │
+  └─────────────────────┴────────────────────────────────────────────┘
+
+  Pattern chung: dùng thuộc tính hidden của HTML để bật/tắt element thay vì display: none qua CSS.
+
+  ▎ 💡 Đây là pattern state machine đơn giản — app luôn ở 1 trong 3 trạng thái: loading | error | content.
+
+  ---
+  🔹 Block 6: Render Functions (6 hàm)
+
+  Các hàm vẽ dữ liệu lên UI:
+
+  ┌───────────────────────────────┬────────────────────────────────────────────────────────────────────────┐
+  │              Hàm              │                                Nhiệm vụ                                │
+  ├───────────────────────────────┼────────────────────────────────────────────────────────────────────────┤
+  │ renderWeather(data)           │ Đổ data vào card "Current Weather" (city, temp, condition, min/max...) │
+  ├───────────────────────────────┼────────────────────────────────────────────────────────────────────────┤
+  │ renderHighlights(data)        │ Đổ data vào 6 ô highlights (UV, wind, sun, humidity...)                │
+  ├───────────────────────────────┼────────────────────────────────────────────────────────────────────────┤
+  │ renderHourly(items)           │ Tạo các <div class="hourly-item"> rồi append vào #hourlyList           │
+  ├───────────────────────────────┼────────────────────────────────────────────────────────────────────────┤
+  │ renderDaily(items)            │ Tạo 5 <li class="daily-item"> rồi append vào #dailyList                │
+  ├───────────────────────────────┼────────────────────────────────────────────────────────────────────────┤
+  │ renderForecast(hourly, daily) │ Wrapper gọi cả 2 hàm trên                                              │
+  ├───────────────────────────────┼────────────────────────────────────────────────────────────────────────┤
+  │ clearContent()                │ Reset tất cả về placeholder                                            │
+  └───────────────────────────────┴────────────────────────────────────────────────────────────────────────┘
+
+  ▎ ⚠️  Hiện tại tất cả đều rỗng — chỉ là bản thiết kế chờ bạn implement.
+
+  ---
+  🔹 Block 7: Data Layer — fetchWeather()
+
+  Đây là hàm quan trọng nhất — nơi sẽ gọi API thật:
+
+  async function fetchWeather(query) {
+      // 1. showLoading()
+      // 2. const res = await fetch(`https://api.weather.com/?city=${query}`)
+      // 3. if (!res.ok) throw new Error(...)
+      // 4. const data = await res.json()
+      // 5. Lưu vào state
+      // 6. Gọi các render functions
+      // 7. showContent()
+  }
+
+  Dùng async/await để code dễ đọc. Comment trong file mô tả chi tiết 11 bước cần làm.
+
+  showContent()
+
+  Hiện #content, ẩn 2 state còn lại. Hàm này được gọi khi API trả data thành công.
+
+  ---
+  🔹 Block 8: Utilities (4 hàm tiện ích)
+
+  ┌──────────────────────────┬─────────────────────────────────────────────────────┐
+  │           Hàm            │                      Công việc                      │
+  ├──────────────────────────┼─────────────────────────────────────────────────────┤
+  │ formatDate(date)         │ Chuyển Date object → string đẹp (vd: "Mon, Jun 22") │
+  ├──────────────────────────┼─────────────────────────────────────────────────────┤
+  │ formatTime(value)        │ ISO time → "HH:mm" (vd: "05:42")                    │
+  ├──────────────────────────┼─────────────────────────────────────────────────────┤
+  │ convertTemp(value, unit) │ Đổi °C ↔ °F                                         │
+  ├──────────────────────────┼─────────────────────────────────────────────────────┤
+  │ getWeatherIcon(code)     │ Map weather code (vd: "01d") → emoji (vd: "☀️ ")     │
+  └──────────────────────────┴─────────────────────────────────────────────────────┘
+
+  ---
+  🔹 Block 9: Boot
+
+  document.addEventListener('DOMContentLoaded', init);
+
+  Lắng nghe sự kiện DOM load xong → gọi init(). Đây là cách chuẩn để chạy JS mà không cần đặt <script> cuối body.
+
+  ---
+  🎯 Tóm tắt luồng hoạt động (khi implement xong)
+
+  User mở trang
+     ↓
+  DOMContentLoaded → init()
+     ↓
+  bindEvents() + showLoading()
+     ↓
+  Sau 600ms → showError("Search for a city...")
+     ↓
+  User gõ "Hanoi" + Enter
+     ↓
+  handleSearch() → fetchWeather("Hanoi")
+     ↓
+  API trả về data → renderWeather + renderForecast
+     ↓
+  showContent() → UI hiển thị data
+     ↓
+  User bấm °C/°F → handleUnitToggle() → convertTemp() + render
+
+  Bạn muốn tôi bắt đầu implement phần nào trước — ví dụ wire fetchWeather() vào Open-Meteo (miễn phí, không cần key)? 🚀

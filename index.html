@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A modern weather app built with vanilla JavaScript, HTML, and CSS.">
+    <title>Weather App — Forecast at a Glance</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ============================================ -->
+    <!-- App Wrapper                                 -->
+    <!-- ============================================ -->
+    <div class="app" id="app">
+
+        <!-- ============================================ -->
+        <!-- Header                                      -->
+        <!-- ============================================ -->
+        <header class="header" id="header">
+            <div class="header__brand">
+                <span class="header__logo" aria-hidden="true">⛅</span>
+                <h1 class="header__title">Weather</h1>
+            </div>
+
+            <nav class="header__nav" aria-label="Primary">
+                <button class="btn btn--ghost" id="unitToggle" type="button" aria-label="Toggle temperature unit">
+                    °C / °F
+                </button>
+                <button class="btn btn--ghost" id="locationBtn" type="button" aria-label="Use my location">
+                    📍 My Location
+                </button>
+            </nav>
+        </header>
+
+        <!-- ============================================ -->
+        <!-- Search Section                              -->
+        <!-- ============================================ -->
+        <section class="search" id="search" aria-label="Search city">
+            <form class="search__form" id="searchForm" role="search">
+                <label class="search__label" for="searchInput">
+                    <span class="visually-hidden">Search for a city</span>
+                </label>
+                <div class="search__field">
+                    <span class="search__icon" aria-hidden="true">🔍</span>
+                    <input
+                        class="search__input"
+                        id="searchInput"
+                        type="search"
+                        name="query"
+                        placeholder="Search for a city..."
+                        autocomplete="off"
+                        required
+                    >
+                    <button class="btn btn--primary search__btn" id="searchBtn" type="submit">
+                        Search
+                    </button>
+                </div>
+                <p class="search__error" id="searchError" role="alert" aria-live="polite"></p>
+            </form>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- Main Weather Layout                         -->
+        <!-- ============================================ -->
+        <main class="main" id="main">
+
+            <!-- Loading State -->
+            <div class="state state--loading" id="loadingState" hidden>
+                <div class="spinner" aria-hidden="true"></div>
+                <p class="state__text">Loading weather data...</p>
+            </div>
+
+            <!-- Error State -->
+            <div class="state state--error" id="errorState" hidden>
+                <span class="state__icon" aria-hidden="true">⚠️</span>
+                <h2 class="state__title">Something went wrong</h2>
+                <p class="state__text" id="errorMessage">Unable to fetch weather data. Please try again.</p>
+                <button class="btn btn--primary" id="errorRetryBtn" type="button">Retry</button>
+            </div>
+
+            <!-- Content shown when data is ready -->
+            <div class="content" id="content" hidden>
+
+                <!-- ============================================ -->
+                <!-- Current Weather                              -->
+                <!-- ============================================ -->
+                <section class="card card--current" id="currentWeather" aria-label="Current weather">
+                    <div class="current__top">
+                        <div class="current__location">
+                            <h2 class="current__city" id="currentCity">—</h2>
+                            <p class="current__date" id="currentDate">—</p>
+                        </div>
+                        <span class="current__icon" id="currentIcon" aria-hidden="true">☀️</span>
+                    </div>
+
+                    <div class="current__main">
+                        <span class="current__temp" id="currentTemp">--°</span>
+                        <p class="current__condition" id="currentCondition">—</p>
+                        <p class="current__range">
+                            <span id="currentMin">--°</span>
+                            <span class="current__divider" aria-hidden="true">/</span>
+                            <span id="currentMax">--°</span>
+                        </p>
+                    </div>
+
+                    <ul class="current__meta" id="currentMeta">
+                        <li class="meta-item">
+                            <span class="meta-item__label">Feels like</span>
+                            <span class="meta-item__value" id="currentFeels">--°</span>
+                        </li>
+                        <li class="meta-item">
+                            <span class="meta-item__label">Humidity</span>
+                            <span class="meta-item__value" id="currentHumidity">--%</span>
+                        </li>
+                        <li class="meta-item">
+                            <span class="meta-item__label">Wind</span>
+                            <span class="meta-item__value" id="currentWind">-- km/h</span>
+                        </li>
+                        <li class="meta-item">
+                            <span class="meta-item__label">Pressure</span>
+                            <span class="meta-item__value" id="currentPressure">-- hPa</span>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- Highlights                                   -->
+                <!-- ============================================ -->
+                <section class="highlights" id="highlights" aria-label="Weather highlights">
+                    <h3 class="section-title">Today's Highlights</h3>
+
+                    <div class="highlights__grid">
+                        <article class="card highlight">
+                            <p class="highlight__label">UV Index</p>
+                            <p class="highlight__value" id="uvValue">--</p>
+                            <span class="highlight__badge" id="uvBadge">—</span>
+                        </article>
+
+                        <article class="card highlight">
+                            <p class="highlight__label">Wind Status</p>
+                            <p class="highlight__value" id="windValue">-- km/h</p>
+                            <p class="highlight__sub" id="windDirection">—</p>
+                        </article>
+
+                        <article class="card highlight">
+                            <p class="highlight__label">Sunrise & Sunset</p>
+                            <p class="highlight__value" id="sunriseValue">--:--</p>
+                            <p class="highlight__sub" id="sunsetValue">--:--</p>
+                        </article>
+
+                        <article class="card highlight">
+                            <p class="highlight__label">Humidity</p>
+                            <p class="highlight__value" id="humidityValue">--%</p>
+                            <p class="highlight__sub" id="humidityStatus">—</p>
+                        </article>
+
+                        <article class="card highlight">
+                            <p class="highlight__label">Visibility</p>
+                            <p class="highlight__value" id="visibilityValue">-- km</p>
+                            <p class="highlight__sub">—</p>
+                        </article>
+
+                        <article class="card highlight">
+                            <p class="highlight__label">Air Quality</p>
+                            <p class="highlight__value" id="airQualityValue">--</p>
+                            <span class="highlight__badge" id="airQualityBadge">—</span>
+                        </article>
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- Hourly Forecast                              -->
+                <!-- ============================================ -->
+                <section class="forecast" id="hourlyForecast" aria-label="Hourly forecast">
+                    <h3 class="section-title">Hourly Forecast</h3>
+
+                    <div class="forecast__list" id="hourlyList" role="list">
+                        <!-- Hourly items injected by JS -->
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- 5-Day Forecast                               -->
+                <!-- ============================================ -->
+                <section class="forecast forecast--days" id="dailyForecast" aria-label="5-day forecast">
+                    <h3 class="section-title">5-Day Forecast</h3>
+
+                    <ul class="forecast__days" id="dailyList" role="list">
+                        <!-- Daily items injected by JS -->
+                    </ul>
+                </section>
+
+            </div>
+        </main>
+
+        <!-- ============================================ -->
+        <!-- Footer                                      -->
+        <!-- ============================================ -->
+        <footer class="footer" id="footer">
+            <p class="footer__text">
+                Built with vanilla HTML, CSS &amp; JavaScript — Portfolio project.
+            </p>
+        </footer>
+
+    </div>
+</body>
+<script src="script.js"></script>
+</html>
