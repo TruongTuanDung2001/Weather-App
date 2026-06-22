@@ -145,7 +145,7 @@
         // TODO: Hide content + error, show loadingState.
         if (loadingState) loadingState.hidden = false;
         if (errorState)   errorState.hidden   = true;
-        if (content)      content.hidden      = true;
+        if (content)      content.hidden      = false;
         state.isLoading = true;
     }
 
@@ -158,7 +158,7 @@
     function showError(message) {
         // TODO: Hide content + loading, show errorState with message.
         if (loadingState) loadingState.hidden = true;
-        if (content)      content.hidden      = true;
+        if (content)      content.hidden      = false;
         if (errorState)   errorState.hidden   = false;
         if (errorMessage) errorMessage.textContent = message || 'Something went wrong.';
         state.error = message;
@@ -260,4 +260,36 @@
     document.addEventListener('DOMContentLoaded', init);
 })();
 
+async function getApiCities(){
+    try {
+        let response = await fetch('https://provinces.open-api.vn/api/p/');
+        // https://geocoding-api.open-meteo.com/v1/search?name=Ho%20Chi%20Minh&count=1&language=vi&format=json
 
+        if(response.ok){
+            let data = await response.json();
+            console.log(data);
+        }
+    } catch (error) {
+        console.log(error);
+        
+    }
+}
+
+getApiCities(); //Có được thông tin 63 tỉnh thành.
+
+async function getApiLocationByNameCities(nameCity){
+    try {
+        nameCity = nameCity.replace('Tỉnh ', '').replace('Thành Phố ', '');
+        console.log(nameCity);
+        
+        let response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${nameCity}&country=VN&count=1`);
+
+        if(response.ok){
+            let data = await response.json();
+            console.log(data);
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+getApiLocationByNameCities('Thành phố Hà Nội'); //Vị trí tọa độ của tỉnh thành. /search
