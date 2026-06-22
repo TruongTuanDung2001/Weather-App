@@ -77,6 +77,10 @@
         error: null
     };
 
+    let celsius;
+    let fahrenheit;
+    let unit = 'celsius';
+
     /* --------------------------------------------------------
        3. Init
        -------------------------------------------------------- */
@@ -125,12 +129,39 @@
         getApiLocationByNameCities(query);
     }
 
-    function handleUnitToggle() {
-        // TODO: Switch state.unit, re-render temperatures.
+    async function handleUnitToggle() {
+        //celsius - fahrenheit
+        if(celsius || fahrenheit){
+            if(unit === 'celsius'){
+                currentTemp.textContent = fahrenheit + '°';
+                unit = 'fahrentheit';
+            }else if(unit === 'fahrentheit'){
+                currentTemp.textContent = celsius + '°';
+                unit = 'celsius';
+            }
+        }
     }
 
-    function handleGeolocation() {
+    async function handleGeolocation() {
         // TODO: Use navigator.geolocation to get coordinates, then fetch by lat/lon.
+        navigator.geolocation //trình duyệt sẽ hỏi và lấy vị trí 
+            .getCurrentPosition(
+                async function (position) {
+                    let lat = position.coords.latitude;
+
+                    let lon = position.coords.longitude;
+
+                    let city = await getCityByLocation(lat, lon);
+
+                    let weather = await getApiWeatherByLocation(lat, lon);
+                    currentCity.textContent = city;
+                },
+                function (error) {
+                    console.log(
+                        error.message
+                    );
+                }
+            );
     }
 
     function handleRetry() {
@@ -183,6 +214,7 @@
         // TODO: Populate current weather fields from API response.
         // Expected shape: { city, date, icon, temp, condition, min, max, feelsLike, humidity, wind, pressure }
         // Current Weather
+        //Đưa thông tin weather api lên html
         currentTemp.textContent = `${Math.round(data.current.temperature_2m)}°`;
 
         currentHumidity.textContent = `${data.current.relative_humidity_2m}%`;
@@ -196,72 +228,39 @@
 
         currentPressure.textContent = `${Math.round(data.current.pressure_msl)} hPa`;
 
-        currentMin.textContent =
-            `${Math.round(
-                data.daily.temperature_2m_min[0]
-            )}°`;
+        currentMin.textContent = `${Math.round(data.daily.temperature_2m_min[0])}°`;
 
-        currentMax.textContent =
-            `${Math.round(
-                data.daily.temperature_2m_max[0]
-            )}°`;
+        currentMax.textContent = `${Math.round(data.daily.temperature_2m_max[0])}°`;
 
         // highlight
         uvValue.textContent = data.daily.uv_index_max[0];
+        windValue.textContent = `${data.current.wind_speed_10m} km/h`;
 
-        windValue.textContent =
-            `${data.current.wind_speed_10m} km/h`;
-
-        humidityValue.textContent =
-            `${data.current.relative_humidity_2m}%`;
-
+        humidityValue.textContent = `${data.current.relative_humidity_2m}%`;
 
         // sunrise sunset
-        sunriseValue.textContent =
-            new Date(
-                data.daily.sunrise[0]
-            )
-                .toLocaleTimeString(
-                    'vi-VN',
-                    {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    }
-                );
-
-        sunsetValue.textContent = new Date(data.daily.sunset[0]).toLocaleTimeString(
-            'vi-VN',
+        sunriseValue.textContent = new Date(data.daily.sunrise[0]).toLocaleTimeString('vi-VN',
             {
                 hour: '2-digit',
                 minute: '2-digit'
-            }
-        );
+            });
 
-        currentFeels.textContent =
-            `${Math.round(
-                data.current.apparent_temperature
-            )}°`;
+        sunsetValue.textContent = new Date(data.daily.sunset[0]).toLocaleTimeString('vi-VN',
+            {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
 
-        visibilityValue.textContent =
-            `${(
-                data.current.visibility
-                / 1000
-            ).toFixed(1)} km`;
+        currentFeels.textContent = `${Math.round(data.current.apparent_temperature)}°`;
 
-        airQualityValue.textContent =
-            getComfort(
-                data.current.temperature_2m,
-                data.current.relative_humidity_2m
-            );
+        visibilityValue.textContent = `${(data.current.visibility / 1000).toFixed(1)} km`;
 
-        airQualityBadge.textContent =
-            'Weather';
+        airQualityValue.textContent = getComfort(data.current.temperature_2m, data.current.relative_humidity_2m);
+
+        airQualityBadge.textContent = 'Weather';
 
         // icon
-        currentIcon.textContent =
-            getWeatherIcon(
-                data.current.weather_code
-            );
+        currentIcon.textContent = getWeatherIcon(data.current.weather_code);
     }
 
     function renderHighlights(data) {
@@ -370,14 +369,19 @@
             if (response.ok) {
                 let data = await response.json();
                 console.log(data);
+
+                //
+                if (!data.results || data.results.length === 0) { //kiểm tra dữ liệu search trả về nếu mà dữ liệu kh có thì hiện lỗi và return luôn
+                    setSearchError('City not found');
+                    return;
+                }
+
                 //
                 let locationAt = data.results[0];
-                console.log(locationAt.latitude);
-                console.log(locationAt.longitude);
                 getApiWeatherByLocation(locationAt.latitude, locationAt.longitude);
                 //
-                currentCity.textContent = locationAt.name;
-                currentDate.textContent = new Date().toLocaleDateString('vi-VN',
+                currentCity.textContent = locationAt.name;   //tên địa điểm 
+                currentDate.textContent = new Date().toLocaleDateString('vi-VN', //ngày giờ hiện tại của vn
                     {
                         weekday: 'long',
                         day: 'numeric',
@@ -388,30 +392,51 @@
             console.log(error);
         }
     }
-    getApiLocationByNameCities('Thành phố Hà Nội'); //Vị trí tọa độ của tỉnh thành. /search
+    // getApiLocationByNameCities(''); //Vị trí tọa độ của tỉnh thành. /search
 
 
     //Hàm lấy thời tiết hiện tại thông qua kinh độ, vĩ độ
-    async function getApiWeatherByLocation(lat, lon) {
+    async function getApiWeatherByLocation(lat, lon, unit = 'celsius') {
         try {
             // let response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m`);
 
             // let response = await fetch(
             //     `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,apparent_temperature,pressure_msl&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`
             // );
-
+            //celsius độ c - fahrenheit độ f
             let response = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,pressure_msl,apparent_temperature,visibility,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`
+                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&temperature_unit=${unit}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,pressure_msl,apparent_temperature,visibility,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`
             ); //lấy thông số api để xuất ra màn hình
             if (response.ok) {
                 let data = await response.json();
                 console.log(data);
                 renderWeather(data);
                 showContent();
+                celsius = Math.round(data.current.temperature_2m);
+                fahrenheit = cToF(celsius);
+                return data;
             }
         } catch (error) {
             console.log(error);
         }
+    }
+
+    //Hàm lấy thông tin thành phố thông qua lat và lon
+    async function getCityByLocation(lat, lon) {
+        let response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+        );
+
+        if (response.ok) {
+            let data = await response.json();
+            return (
+                data.address.city ||
+                data.address.state ||
+                data.address.county ||
+                'Unknown'
+            );
+        }
+
     }
 
     //Hàm lấy thông số cảm giác nhiệt độ
@@ -433,7 +458,7 @@
                 ? '☀️'
                 : '🌙';
         }
-        
+
         // ít mây
         if ([1, 2].includes(code)) {
             return isDay
@@ -468,6 +493,14 @@
         return '🌍';
     }
 
+    //
+    function fToC(f) {
+        return (f - 32) * 5 / 9;
+    }
+
+    function cToF(c) {
+        return (c * 9 / 5) + 32;
+    }
 
 })();
 
