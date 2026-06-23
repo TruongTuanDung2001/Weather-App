@@ -694,7 +694,7 @@ ul {
     }
 }
 
-
+/* Fix bug aways show loading and error */
 .state[hidden],
 .content[hidden]{
     display: none !important;
