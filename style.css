@@ -693,3 +693,9 @@ ul {
         transition-duration: 0.01ms !important;
     }
 }
+
+
+.state[hidden],
+.content[hidden]{
+    display: none !important;
+}

@@ -90,11 +90,14 @@
         // TODO: Optionally load last searched city from localStorage.
         bindEvents();
         // For now, just show a friendly placeholder state.
-        showLoading();
+        // showLoading();
         // Simulate initial idle UI (no data yet).
-        setTimeout(() => {
-            showError('Search for a city to see the weather forecast.');
-        }, 600);
+        // setTimeout(() => {
+        //     showError('Search for a city to see the weather forecast.');
+        // }, 600);
+        hideLoading();
+        hideError();
+        // showContent();
     }
 
     function bindEvents() {
@@ -131,11 +134,11 @@
 
     async function handleUnitToggle() {
         //celsius - fahrenheit
-        if(celsius || fahrenheit){
-            if(unit === 'celsius'){
+        if (celsius || fahrenheit) {
+            if (unit === 'celsius') {
                 currentTemp.textContent = fahrenheit + '°';
                 unit = 'fahrentheit';
-            }else if(unit === 'fahrentheit'){
+            } else if (unit === 'fahrentheit') {
                 currentTemp.textContent = celsius + '°';
                 unit = 'celsius';
             }
@@ -176,7 +179,7 @@
         // TODO: Hide content + error, show loadingState.
         if (loadingState) loadingState.hidden = false;
         if (errorState) errorState.hidden = true;
-        if (content) content.hidden = false;
+        if (content) content.hidden = true;
         state.isLoading = true;
     }
 
@@ -189,7 +192,7 @@
     function showError(message) {
         // TODO: Hide content + loading, show errorState with message.
         if (loadingState) loadingState.hidden = true;
-        if (content) content.hidden = false;
+        if (content) content.hidden = true;
         if (errorState) errorState.hidden = false;
         if (errorMessage) errorMessage.textContent = message || 'Something went wrong.';
         state.error = message;
@@ -370,9 +373,11 @@
                 let data = await response.json();
                 console.log(data);
 
-                //
-                if (!data.results || data.results.length === 0) { //kiểm tra dữ liệu search trả về nếu mà dữ liệu kh có thì hiện lỗi và return luôn
+                //kiểm tra dữ liệu search trả về nếu mà dữ liệu kh có thì hiện lỗi và return luôn
+                if (!data.results || data.results.length === 0) {
                     setSearchError('City not found');
+                    hideLoading();
+                    showError('City not found');
                     return;
                 }
 
@@ -398,18 +403,13 @@
     //Hàm lấy thời tiết hiện tại thông qua kinh độ, vĩ độ
     async function getApiWeatherByLocation(lat, lon, unit = 'celsius') {
         try {
-            // let response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m`);
-
-            // let response = await fetch(
-            //     `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,apparent_temperature,pressure_msl&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`
-            // );
+            showLoading();
             //celsius độ c - fahrenheit độ f
             let response = await fetch(
                 `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&temperature_unit=${unit}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,pressure_msl,apparent_temperature,visibility,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`
             ); //lấy thông số api để xuất ra màn hình
             if (response.ok) {
                 let data = await response.json();
-                console.log(data);
                 renderWeather(data);
                 showContent();
                 celsius = Math.round(data.current.temperature_2m);
@@ -418,6 +418,8 @@
             }
         } catch (error) {
             console.log(error);
+            hideLoading();
+            showError(error.message);
         }
     }
 
